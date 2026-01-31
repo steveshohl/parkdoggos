@@ -1,19 +1,13 @@
-const path = require('path');
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: process.env.NEXT_DIST_DIR || '.next',
-  output: process.env.NEXT_OUTPUT_MODE,
-  experimental: {
-    outputFileTracingRoot: path.join(__dirname, '../'),
-  },
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: false,
   },
-  images: { unoptimized: true },
-};
+  // Let Vercel/Next handle distDir and output automatically.
+  // Remove `images.unoptimized` so Next can optimize images on Vercel.
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
