@@ -105,11 +105,8 @@ export function MediaGrid({ items, galleryType }: MediaGridProps) {
           <section key={group.name || 'all'}>
             {/* Only show group header when there IS a group name */}
             {group.name && (
-              <div className="mb-6 flex items-end justify-between">
+              <div className="mb-6">
                 <h2 className="text-xl md:text-2xl font-medium tracking-tight">{group.name}</h2>
-                <span className="text-sm text-muted-foreground">
-                  {group.items.length} item{group.items.length === 1 ? '' : 's'}
-                </span>
               </div>
             )}
 
@@ -138,7 +135,8 @@ export function MediaGrid({ items, galleryType }: MediaGridProps) {
                 const showCaptionBelow =
                   !!caption && caption !== title && (!group.name || caption !== group.name)
 
-                const overlayText = title || (caption && (!group.name || caption !== group.name) ? caption : '')
+                const overlayText =
+                  title || (caption && (!group.name || caption !== group.name) ? caption : '')
 
                 return (
                   <button
@@ -178,7 +176,9 @@ export function MediaGrid({ items, galleryType }: MediaGridProps) {
 
                         {overlayText && (
                           <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-foreground/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p className="text-sm text-accent-foreground line-clamp-2">{overlayText}</p>
+                            <p className="text-sm text-accent-foreground line-clamp-2">
+                              {overlayText}
+                            </p>
                           </div>
                         )}
                       </div>
