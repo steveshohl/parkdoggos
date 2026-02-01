@@ -109,13 +109,10 @@ export default async function PortfolioPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
             {/* STILLS */}
             <section>
-              <div className="mb-6 flex items-end justify-between">
+              <div className="mb-6">
                 <h2 className="text-xl md:text-2xl font-medium tracking-tight">
                   Stills
                 </h2>
-                <span className="text-sm text-muted-foreground">
-                  {stills.length} gallery{stills.length === 1 ? '' : 'ies'}
-                </span>
               </div>
 
               {stills.length ? (
@@ -129,13 +126,10 @@ export default async function PortfolioPage() {
 
             {/* VIDEO */}
             <section>
-              <div className="mb-6 flex items-end justify-between">
+              <div className="mb-6">
                 <h2 className="text-xl md:text-2xl font-medium tracking-tight">
                   Video
                 </h2>
-                <span className="text-sm text-muted-foreground">
-                  {videos.length} gallery{videos.length === 1 ? '' : 'ies'}
-                </span>
               </div>
 
               {videos.length ? (
