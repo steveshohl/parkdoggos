@@ -9,7 +9,7 @@ export const schemaTypes = [
     title: 'Site Settings',
     type: 'document',
 
-    // ✅ Marks this as a singleton (used by deskStructure + conventions)
+
     options: {
       singleton: true,
     },
