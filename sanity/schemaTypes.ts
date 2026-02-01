@@ -8,6 +8,12 @@ export const schemaTypes = [
     name: 'siteSettings',
     title: 'Site Settings',
     type: 'document',
+
+    // ✅ Marks this as a singleton (used by deskStructure + conventions)
+    options: {
+      singleton: true,
+    },
+
     fields: [
       defineField({ name: 'title', title: 'Site Title', type: 'string' }),
       defineField({ name: 'brandStatement', title: 'Brand Statement', type: 'text' }),
@@ -16,11 +22,11 @@ export const schemaTypes = [
 
       defineField({ name: 'aboutTitle', title: 'About Title', type: 'string' }),
       defineField({
-  name: 'aboutContent',
-  title: 'About Content',
-  type: 'array',
-  of: [{ type: 'block' }],
-}),
+        name: 'aboutContent',
+        title: 'About Content',
+        type: 'array',
+        of: [{ type: 'block' }],
+      }),
       defineField({
         name: 'aboutPortrait',
         title: 'About Portrait',
@@ -41,7 +47,7 @@ export const schemaTypes = [
       defineField({ name: 'title', title: 'Title', type: 'string' }),
       defineField({ name: 'subtitle', title: 'Subtitle', type: 'text' }),
 
-      // ✅ NEW: allow multiple hero images
+      // ✅ allow multiple hero images
       defineField({
         name: 'heroImages',
         title: 'Hero Images',
@@ -52,14 +58,12 @@ export const schemaTypes = [
             title: 'Hero Image',
             type: 'image',
             options: { hotspot: true },
-            fields: [
-              defineField({ name: 'alt', title: 'Alt text', type: 'string' }),
-            ],
+            fields: [defineField({ name: 'alt', title: 'Alt text', type: 'string' })],
           }),
         ],
       }),
 
-      // ⬅ keep the original single image as a fallback (can remove later)
+      // fallback legacy single image (optional)
       defineField({
         name: 'heroImage',
         title: 'Hero Image (legacy)',
