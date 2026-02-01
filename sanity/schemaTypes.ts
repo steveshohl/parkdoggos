@@ -9,11 +9,6 @@ export const schemaTypes = [
     title: 'Site Settings',
     type: 'document',
 
-
-    options: {
-      singleton: true,
-    },
-
     fields: [
       defineField({ name: 'title', title: 'Site Title', type: 'string' }),
       defineField({ name: 'brandStatement', title: 'Brand Statement', type: 'text' }),
@@ -117,7 +112,7 @@ export const schemaTypes = [
         options: { hotspot: true },
       }),
 
-      // ✅ NEW: drag-and-drop ordering per gallery (references to Media Items)
+      // ✅ drag-and-drop ordering per gallery (references to Media Items)
       defineField({
         name: 'items',
         title: 'Gallery Items (drag to reorder)',
