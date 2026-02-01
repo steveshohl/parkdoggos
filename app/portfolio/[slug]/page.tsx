@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
@@ -17,7 +18,8 @@ function toSlugString(value: unknown): string | null {
   const v = value as any
   if (typeof v.current === 'string') return v.current
   if (typeof v.slug === 'string') return v.slug
-  if (v.slug && typeof v.slug === 'object' && typeof v.slug.current === 'string') return v.slug.current
+  if (v.slug && typeof v.slug === 'object' && typeof v.slug.current === 'string')
+    return v.slug.current
   return null
 }
 
@@ -34,13 +36,66 @@ export async function generateStaticParams() {
   }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string }
+}): Promise<Metadata> {
   const slug = typeof params?.slug === 'string' ? params.slug : ''
   const gallery = await getGalleryBySlug(slug)
 
+  if (!gallery?.title) {
+    return {
+      title: 'Gallery | ParkDoggos',
+      description: 'View dog photography and video work by ParkDoggos.',
+      alternates: { canonical: 'https://parkdoggos.com/portfolio' },
+      openGraph: {
+        type: 'website',
+        url: 'https://parkdoggos.com/portfolio',
+        title: 'Gallery | ParkDoggos',
+        description: 'View dog photography and video work by ParkDoggos.',
+        siteName: 'ParkDoggos',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Gallery | ParkDoggos',
+        description: 'View dog photography and video work by ParkDoggos.',
+      },
+    }
+  }
+
+  const city = 'Brooklyn and NYC'
+  const isVideo = gallery.type === 'video'
+  const vibe = isVideo
+    ? 'Cinematic dog video portraits'
+    : 'Dramatic outdoor dog portraits using off-camera flash'
+
+  const title = `${gallery.title} | ${city} | ParkDoggos`
+  const description =
+    (gallery.description && gallery.description.trim()) ||
+    `${vibe} by ParkDoggos in ${city}.`
+
+  const canonical = `https://parkdoggos.com/portfolio/${gallery.slug?.current ?? slug}`
+
   return {
-    title: gallery?.title ? `${gallery.title} | ParkDoggos` : 'Gallery | ParkDoggos',
-    description: gallery?.description || 'View this gallery',
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: 'article',
+      url: canonical,
+      title,
+      description,
+      siteName: 'ParkDoggos',
+      // Optional (recommended): add /public/og.jpg (1200x630) and uncomment:
+      // images: [{ url: 'https://parkdoggos.com/og.jpg', width: 1200, height: 630, alt: 'ParkDoggos' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      // Optional: images: ['https://parkdoggos.com/og.jpg'],
+    },
   }
 }
 
