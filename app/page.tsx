@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
@@ -7,6 +8,33 @@ import { HeroCarousel } from '@/components/gallery/hero-carousel'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+export const metadata: Metadata = {
+  title: 'ParkDoggos | Dramatic Outdoor Dog Photography in NYC',
+  description:
+    'ParkDoggos creates dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC using off-camera flash and editorial lighting techniques.',
+  alternates: {
+    canonical: 'https://parkdoggos.com',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://parkdoggos.com',
+    title: 'ParkDoggos | Dramatic Outdoor Dog Photography in NYC',
+    description:
+      'Dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC — off-camera flash with an editorial feel.',
+    siteName: 'ParkDoggos',
+    // Optional (recommended): add /public/og.jpg (1200x630)
+    // images: [{ url: 'https://parkdoggos.com/og.jpg', width: 1200, height: 630, alt: 'ParkDoggos' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ParkDoggos | Dramatic Outdoor Dog Photography in NYC',
+    description:
+      'Dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC — off-camera flash with an editorial feel.',
+    // Optional (recommended): add /public/og.jpg
+    // images: ['https://parkdoggos.com/og.jpg'],
+  },
+}
 
 function pickRandom<T>(arr: T[]): T | null {
   if (!Array.isArray(arr) || arr.length === 0) return null
