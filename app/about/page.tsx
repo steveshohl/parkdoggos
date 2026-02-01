@@ -3,18 +3,23 @@ import { PortableText } from '@portabletext/react'
 import { getSiteSettings } from '@/lib/sanity/queries'
 import { urlFor } from '@/lib/sanity/sanity.images'
 
+export const revalidate = 60 // keeps About page updating after publishes
+
 export default async function AboutPage() {
   const settings = await getSiteSettings()
 
   const title = settings?.aboutTitle || 'About'
-  const body = settings?.aboutContent || null
+  const body = settings?.aboutContent ?? null
 
-  // ✅ Defensive: filter out any invalid Portable Text blocks (prevents "unknown block type undefined" warnings)
-  const safeBody = Array.isArray(body)
+  // Portable Text blocks (array of { _type: 'block', ... })
+  const bodyAsBlocks = Array.isArray(body)
     ? body.filter((b: any) => b && typeof b === 'object' && b._type)
     : null
 
-  const portraitUrl = settings?.aboutPortrait?.asset
+  // Fallback if body is a plain string
+  const bodyAsString = typeof body === 'string' ? body : null
+
+  const portraitUrl = settings?.aboutPortrait
     ? urlFor(settings.aboutPortrait).width(900).url()
     : null
 
@@ -23,15 +28,13 @@ export default async function AboutPage() {
       <div className="max-w-page mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
           <div className="md:col-span-7">
-            <h1 className="text-3xl md:text-4xl font-light tracking-tight mb-6">
-              {title}
-            </h1>
+            <h1 className="text-3xl md:text-4xl font-light tracking-tight mb-6">{title}</h1>
 
             <div className="prose prose-neutral max-w-none">
-              {safeBody && safeBody.length > 0 ? (
+              {bodyAsBlocks && bodyAsBlocks.length > 0 ? (
                 <div className="text-muted-foreground text-lg leading-relaxed">
                   <PortableText
-                    value={safeBody}
+                    value={bodyAsBlocks}
                     components={{
                       block: {
                         normal: ({ children }) => (
@@ -41,8 +44,9 @@ export default async function AboutPage() {
                       marks: {
                         link: ({ children, value }) => {
                           const href = value?.href
-                          const blank = value?.blank
+                          if (!href) return <>{children}</>
 
+                          const blank = value?.blank
                           return (
                             <a
                               href={href}
@@ -57,6 +61,10 @@ export default async function AboutPage() {
                       },
                     }}
                   />
+                </div>
+              ) : bodyAsString ? (
+                <div className="text-muted-foreground text-lg leading-relaxed whitespace-pre-wrap">
+                  {bodyAsString}
                 </div>
               ) : (
                 <p className="text-muted-foreground text-lg leading-relaxed">

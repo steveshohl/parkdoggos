@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import {
   getGalleryBySlug,
-  getMediaItemsByGallery,
   getAdjacentGalleries,
   getAllGallerySlugs,
 } from '@/lib/sanity/queries'
@@ -56,13 +55,16 @@ export default async function GalleryDetailPage({
   const gallery = await getGalleryBySlug(slug)
   if (!gallery) notFound()
 
-  const [mediaItems, adjacent] = await Promise.all([
-    getMediaItemsByGallery(gallery._id),
-    getAdjacentGalleries(gallery.order ?? 0, gallery.title ?? ''),
-  ])
+  const adjacent = await getAdjacentGalleries(gallery.order ?? 0, gallery.title ?? '')
 
   const prevSlug = adjacent?.prev?.slug?.current
   const nextSlug = adjacent?.next?.slug?.current
+
+  // ✅ IMPORTANT:
+  // getGalleryBySlug now returns `items` in the correct order:
+  // - manual drag order from Gallery.items[] if populated
+  // - fallback query if not populated yet
+  const mediaItems = Array.isArray((gallery as any)?.items) ? (gallery as any).items : []
 
   return (
     <div className="py-12 md:py-16 px-page">

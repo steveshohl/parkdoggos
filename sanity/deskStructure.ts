@@ -43,26 +43,28 @@ const gallerySection = (
           S.list()
             .title('Gallery')
             .items([
+              // ✅ This is where you will drag/reorder:
+              // open the Gallery document editor, which contains the `items` array field.
               S.listItem()
-                .title('Edit Gallery')
+                .title('Edit + Reorder')
                 .child(
                   S.document()
                     .schemaType('gallery')
                     .documentId(galleryId)
+                    .title('Edit + Reorder')
                 ),
 
+              S.divider(),
+
+              // Useful for quick browsing / editing individual MediaItem docs
               S.listItem()
                 .title('Media Items (for this gallery)')
                 .child(
                   S.documentTypeList('mediaItem')
                     .title('Media Items (for this gallery)')
-                    .filter(
-                      '_type == "mediaItem" && gallery._ref == $galleryId'
-                    )
+                    .filter('_type == "mediaItem" && gallery._ref == $galleryId')
                     .params({ galleryId })
-                    .defaultOrdering([
-                      { field: 'order', direction: 'asc' },
-                    ])
+                    .defaultOrdering([{ field: 'order', direction: 'asc' }])
                 ),
             ])
         )

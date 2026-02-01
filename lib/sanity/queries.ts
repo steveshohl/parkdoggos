@@ -60,7 +60,9 @@ export async function getHome(): Promise<{
       : []
 
     const cleanHeroImage =
-      home.heroImage && (home.heroImage.asset?._ref || home.heroImage.asset?._id) ? home.heroImage : null
+      home.heroImage && (home.heroImage.asset?._ref || home.heroImage.asset?._id)
+        ? home.heroImage
+        : null
 
     return {
       ...home,
@@ -154,7 +156,39 @@ export async function getGalleryBySlug(slug: string): Promise<Gallery | null> {
       type,
       coverImage,
       order,
-      featured
+      featured,
+
+      // ✅ PRIMARY: if Gallery.items[] exists (drag-and-drop), use it (order is preserved)
+      // ✅ FALLBACK: otherwise use the old mediaItem query (so nothing breaks while migrating)
+      "items": coalesce(
+        items[]->{
+          _id,
+          title,
+          caption,
+          mediaType,
+          image,
+          videoUrl,
+          videoPoster,
+          order,
+          featured
+        },
+
+        *[
+          _type == "mediaItem" &&
+          ${PUBLISHED_FILTER} &&
+          gallery._ref == ^._id
+        ] | order(order asc){
+          _id,
+          title,
+          caption,
+          mediaType,
+          image,
+          videoUrl,
+          videoPoster,
+          order,
+          featured
+        }
+      )
     }`
 
     return await client.fetch(query, { slug }, { next: { revalidate: revalidateTime } })

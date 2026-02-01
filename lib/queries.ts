@@ -21,16 +21,33 @@ export const galleryBySlugQuery = `
   coverImage,
   order,
   featured,
-  "items": *[_type == "mediaItem" && published == true && gallery._ref == ^._id] | order(order asc) {
-    _id,
-    title,
-    caption,
-    mediaType,
-    image,
-    videoUrl,
-    videoPoster,
-    order,
-    featured
-  }
+
+  // ✅ NEW: if Gallery.items[] has been set (drag + drop), use it (order is preserved)
+  // ✅ FALLBACK: if items[] is empty/not set yet, use the old query so the site still works
+  "items": coalesce(
+    items[]->{
+      _id,
+      title,
+      caption,
+      mediaType,
+      image,
+      videoUrl,
+      videoPoster,
+      order,
+      featured
+    },
+
+    *[_type == "mediaItem" && published == true && gallery._ref == ^._id] | order(order asc) {
+      _id,
+      title,
+      caption,
+      mediaType,
+      image,
+      videoUrl,
+      videoPoster,
+      order,
+      featured
+    }
+  )
 }
 `

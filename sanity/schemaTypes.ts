@@ -117,6 +117,19 @@ export const schemaTypes = [
         options: { hotspot: true },
       }),
 
+      // ✅ NEW: drag-and-drop ordering per gallery (references to Media Items)
+      defineField({
+        name: 'items',
+        title: 'Gallery Items (drag to reorder)',
+        type: 'array',
+        of: [
+          defineArrayMember({
+            type: 'reference',
+            to: [{ type: 'mediaItem' }],
+          }),
+        ],
+      }),
+
       defineField({
         name: 'order',
         title: 'Order',
