@@ -9,69 +9,120 @@ import { HeroCarousel } from '@/components/gallery/hero-carousel'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+const SITE_URL = 'https://parkdoggos.com'
+const OG_IMAGE = `${SITE_URL}/og.jpg`
+
 export const metadata: Metadata = {
   title: 'ParkDoggos | Dramatic Outdoor Dog Photography in NYC',
   description:
     'ParkDoggos creates dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC using off-camera flash and editorial lighting techniques.',
-  alternates: {
-    canonical: 'https://parkdoggos.com',
-  },
+  alternates: { canonical: SITE_URL },
   openGraph: {
     type: 'website',
-    url: 'https://parkdoggos.com',
+    url: SITE_URL,
     title: 'ParkDoggos | Dramatic Outdoor Dog Photography in NYC',
     description:
       'Dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC — off-camera flash with an editorial feel.',
     siteName: 'ParkDoggos',
-    // Optional (recommended): add /public/og.jpg (1200x630)
-    // images: [{ url: 'https://parkdoggos.com/og.jpg', width: 1200, height: 630, alt: 'ParkDoggos' }],
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'ParkDoggos – Dramatic Outdoor Dog Portraits in NYC',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'ParkDoggos | Dramatic Outdoor Dog Photography in NYC',
     description:
       'Dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC — off-camera flash with an editorial feel.',
-    // Optional (recommended): add /public/og.jpg
-    // images: ['https://parkdoggos.com/og.jpg'],
+    images: [OG_IMAGE],
   },
 }
 
-function pickRandom<T>(arr: T[]): T | null {
-  if (!Array.isArray(arr) || arr.length === 0) return null
-  return arr[Math.floor(Math.random() * arr.length)] ?? null
+/**
+ * HERO IMAGES: tolerate BOTH schema styles:
+ * 1) array items are direct `image` objects
+ * 2) array items are `reference`s (or resolved docs) that *contain* an image field
+ *
+ * Notes:
+ * - If a list item is a bare reference (only {_ref, _type:'reference'}) and your GROQ
+ *   does NOT dereference it, Studio will still be fine but we cannot build a URL here.
+ *   (In practice, your `getHome()` query likely already dereferences, since the live site works.)
+ */
+function extractSanityImage(value: any): any | null {
+  if (!value || typeof value !== 'object') return null
+
+  // Direct image object: { _type: 'image', asset: {...} }
+  if (value?._type === 'image' || value?.asset) return value
+
+  // Resolved referenced doc patterns (you may name the field differently)
+  // e.g. mediaItem { image }, { photo }, { mainImage }, etc.
+  if (value?.image) return extractSanityImage(value.image)
+  if (value?.photo) return extractSanityImage(value.photo)
+  if (value?.mainImage) return extractSanityImage(value.mainImage)
+  if (value?.heroImage) return extractSanityImage(value.heroImage)
+  if (value?.coverImage) return extractSanityImage(value.coverImage)
+
+  // Sometimes your query might return { _type:'reference', ... } but also include an expanded `value.ref`
+  if (value?.ref) return extractSanityImage(value.ref)
+
+  return null
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
 }
 
 export default async function HomePage() {
   const [home, settings] = await Promise.all([getHome(), getSiteSettings()])
 
-  const candidates = Array.isArray((home as any)?.heroImages)
+  const rawHeroItems = Array.isArray((home as any)?.heroImages)
     ? (home as any).heroImages
     : []
-  const fallbackSingle = (home as any)?.heroImage ? [(home as any).heroImage] : []
-  const heroPool = candidates.length > 0 ? candidates : fallbackSingle
 
-  const chosenHero = pickRandom(heroPool)
+  // Legacy single image fallback
+  const legacyHero = (home as any)?.heroImage ? [(home as any).heroImage] : []
 
-  const heroImages = chosenHero
-    ? [
-        {
-          url:
-            urlFor(chosenHero)
-              ?.width(2600)
-              ?.fit('max')
-              ?.auto('format')
-              ?.url?.() || '',
-          mobileUrl:
-            urlFor(chosenHero)
-              ?.width(1400)
-              ?.height(2100)
-              ?.fit('crop')
-              ?.auto('format')
-              ?.url?.() || '',
-          alt: home?.title || 'Hero image',
-        },
-      ]
-    : []
+  // Prefer the list if present; otherwise fallback to legacy single
+  const heroPool = rawHeroItems.length > 0 ? rawHeroItems : legacyHero
+
+  // Build a carousel-friendly list, tolerant of mixed item shapes
+  const heroImages = shuffle(heroPool)
+    .map((item: any) => {
+      const img = extractSanityImage(item)
+      if (!img) return null
+
+      const url =
+        urlFor(img)?.width(2600)?.fit('max')?.auto('format')?.url?.() || ''
+
+      const mobileUrl =
+        urlFor(img)
+          ?.width(1400)
+          ?.height(2100)
+          ?.fit('crop')
+          ?.auto('format')
+          ?.url?.() || ''
+
+      // Try a few reasonable alt fallbacks
+      const alt =
+        item?.alt ||
+        item?.caption ||
+        (home as any)?.title ||
+        'Hero image'
+
+      if (!url) return null
+      return { url, mobileUrl, alt }
+    })
+    .filter(Boolean)
+    .slice(0, 12) as { url: string; mobileUrl?: string; alt: string }[]
 
   const featuredGalleries = settings?.featuredGalleries ?? []
 
@@ -84,13 +135,13 @@ export default async function HomePage() {
             Dramatic outdoor dog photography.
           </h1>
 
-          {home?.heroCtaText && home?.heroCtaLink && (
+          {(home as any)?.heroCtaText && (home as any)?.heroCtaLink && (
             <div className="mt-4">
               <Link
-                href={home.heroCtaLink}
+                href={(home as any).heroCtaLink}
                 className="inline-flex items-center gap-2 px-5 py-3 bg-accent text-accent-foreground font-medium rounded hover:opacity-90 transition-opacity"
               >
-                {home.heroCtaText}
+                {(home as any).heroCtaText}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -100,7 +151,7 @@ export default async function HomePage() {
 
       {/* ================= HERO IMAGE ================= */}
       <section className="relative h-[78vh] md:h-[86vh] overflow-hidden">
-        {heroImages.length > 0 && heroImages[0].url ? (
+        {heroImages.length > 0 && heroImages[0]?.url ? (
           <Link
             href="/portfolio"
             aria-label="View portfolio"
@@ -129,9 +180,9 @@ export default async function HomePage() {
       <section className="py-8 md:py-10 px-page">
         <div className="max-w-page mx-auto">
           <p className="max-w-2xl text-xl md:text-2xl leading-relaxed text-muted-foreground">
-            ParkDoggos creates dramatic, outdoor, softbox-lit dog portraits in Brooklyn and
-            NYC, using off-camera flash and editorial lighting techniques more
-            common in fashion photography.
+            ParkDoggos creates dramatic, outdoor, softbox-lit dog portraits in
+            Brooklyn and NYC, using off-camera flash and editorial lighting
+            techniques more common in fashion photography.
           </p>
         </div>
       </section>

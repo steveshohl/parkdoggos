@@ -12,9 +12,43 @@ const inter = Inter({
   variable: '--font-sans',
 })
 
+const SITE_URL = 'https://parkdoggos.com'
+const OG_IMAGE = `${SITE_URL}/og.jpg`
+
 export const metadata: Metadata = {
-  title: 'ParkDoggos',
-  description: 'Dramatic dog portrait photography',
+  // Baseline defaults (page-level metadata can override these)
+  title: {
+    default: 'ParkDoggos',
+    template: '%s | ParkDoggos',
+  },
+  description:
+    'Dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC using off-camera flash and editorial lighting techniques.',
+  alternates: {
+    canonical: SITE_URL,
+  },
+  openGraph: {
+    type: 'website',
+    url: SITE_URL,
+    title: 'ParkDoggos',
+    description:
+      'Dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC using off-camera flash and editorial lighting techniques.',
+    siteName: 'ParkDoggos',
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'ParkDoggos – Dramatic Outdoor Dog Portraits in NYC',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ParkDoggos',
+    description:
+      'Dramatic, outdoor, softbox-lit dog portraits in Brooklyn and NYC — off-camera flash with an editorial feel.',
+    images: [OG_IMAGE],
+  },
 }
 
 const GA_ID = 'G-HD76K77ST3'
